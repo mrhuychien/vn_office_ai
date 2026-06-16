@@ -1,0 +1,14 @@
+[
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-custom_cccd",
+  "dt": "Employee",
+  "module": "VN Office AI",
+  "label": "Số CCCD",
+  "fieldname": "custom_cccd",
+  "fieldtype": "Data",
+  "insert_after": "passport_number",
+  "description": "Số Căn cước công dân (12 chữ số) — dùng cho HĐLĐ và văn bản nhân sự",
+  "translatable": 0
+ }
+]

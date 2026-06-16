@@ -1,0 +1,37 @@
+{
+ "actions": [],
+ "creation": "2026-06-15 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "output_doctype",
+  "output_docname",
+  "based_on_findings",
+  "amount",
+  "status",
+  "created_at",
+  "created_by",
+  "notes"
+ ],
+ "fields": [
+  {"fieldname": "output_doctype", "fieldtype": "Link", "label": "DocType", "options": "DocType", "in_list_view": 1, "reqd": 1, "columns": 2},
+  {"fieldname": "output_docname", "fieldtype": "Dynamic Link", "label": "Record", "options": "output_doctype", "in_list_view": 1, "reqd": 1, "columns": 2},
+  {"fieldname": "based_on_findings", "fieldtype": "Small Text", "label": "Findings cơ sở"},
+  {"fieldname": "amount", "fieldtype": "Currency", "label": "Số tiền", "in_list_view": 1, "columns": 2},
+  {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Draft\nSubmitted\nCancelled", "in_list_view": 1, "columns": 1, "reqd": 1, "default": "Draft"},
+  {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1},
+  {"fieldname": "created_by", "fieldtype": "Link", "label": "Created By", "options": "User", "reqd": 1},
+  {"fieldname": "notes", "fieldtype": "Small Text", "label": "Notes"}
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-15 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "VN Office AI",
+ "name": "AI Office Analysis Output",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "creation": "2026-06-15 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "field_name",
+  "field_label",
+  "field_type",
+  "value_text",
+  "source_of_value"
+ ],
+ "fields": [
+  {"fieldname": "field_name", "fieldtype": "Data", "label": "Field", "in_list_view": 1, "reqd": 1, "columns": 2},
+  {"fieldname": "field_label", "fieldtype": "Data", "label": "Label", "in_list_view": 1, "columns": 3},
+  {"fieldname": "field_type", "fieldtype": "Data", "label": "Type", "columns": 1},
+  {"fieldname": "value_text", "fieldtype": "Long Text", "label": "Giá trị", "in_list_view": 1, "columns": 4},
+  {"fieldname": "source_of_value", "fieldtype": "Select", "label": "Nguồn", "options": "User Input\nFetched From Source\nDefault"}
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-15 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "VN Office AI",
+ "name": "AI Office Document Field Value",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

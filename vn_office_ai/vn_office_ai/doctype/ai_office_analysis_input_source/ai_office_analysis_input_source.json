@@ -1,0 +1,39 @@
+{
+ "actions": [],
+ "creation": "2026-06-15 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "source_type",
+  "file",
+  "file_name",
+  "file_size_kb",
+  "file_type",
+  "row_count",
+  "parsed",
+  "parse_error",
+  "notes"
+ ],
+ "fields": [
+  {"fieldname": "source_type", "fieldtype": "Select", "label": "Loại nguồn", "options": "File Upload\nInternal Query\nManual Input", "in_list_view": 1, "reqd": 1, "columns": 2, "default": "File Upload"},
+  {"fieldname": "file", "fieldtype": "Attach", "label": "File", "in_list_view": 1, "columns": 3, "depends_on": "eval:doc.source_type=='File Upload'"},
+  {"fieldname": "file_name", "fieldtype": "Data", "label": "Tên file", "in_list_view": 1, "columns": 2},
+  {"fieldname": "file_size_kb", "fieldtype": "Int", "label": "Size KB"},
+  {"fieldname": "file_type", "fieldtype": "Data", "label": "Type"},
+  {"fieldname": "row_count", "fieldtype": "Int", "label": "Số dòng", "in_list_view": 1, "columns": 1, "read_only": 1},
+  {"fieldname": "parsed", "fieldtype": "Check", "label": "Đã parse", "in_list_view": 1, "columns": 1, "read_only": 1},
+  {"fieldname": "parse_error", "fieldtype": "Small Text", "label": "Lỗi parse", "read_only": 1},
+  {"fieldname": "notes", "fieldtype": "Small Text", "label": "Ghi chú"}
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-15 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "VN Office AI",
+ "name": "AI Office Analysis Input Source",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

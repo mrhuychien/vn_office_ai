@@ -1,0 +1,994 @@
+[
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-HDLD-XDTH",
+  "template_code": "TPL-HDLD-XDTH",
+  "template_name": "Hợp đồng lao động xác định thời hạn",
+  "category": "Hợp đồng",
+  "icon": "📄",
+  "is_active": 1,
+  "description": "HĐLĐ xác định thời hạn theo Bộ luật Lao động 2019, tự điền từ hồ sơ nhân viên",
+  "source_doctype": "Employee",
+  "source_required": 1,
+  "source_filter": "{\"status\": \"Active\"}",
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "llm_model": "",
+  "prompt_system": "Bạn là chuyên viên nhân sự Việt Nam. Soạn một HỢP ĐỒNG LAO ĐỘNG XÁC ĐỊNH THỜI HẠN tuân thủ Bộ luật Lao động 2019 (Luật số 45/2019/QH14).\n\nYÊU CẦU:\n- Trả về DUY NHẤT nội dung HTML hợp lệ (dùng <h2>, <p>, <table>, <ol>), KHÔNG markdown, KHÔNG giải thích thêm.\n- Cấu trúc bắt buộc: Quốc hiệu tiêu ngữ; số HĐ; căn cứ pháp lý (BLLĐ 2019, nhu cầu của hai bên); thông tin Bên A (dùng {{COMPANY}} cho tên công ty) và Bên B (người lao động); các điều khoản: (1) Loại HĐ và thời hạn, (2) Công việc và địa điểm, (3) Thời giờ làm việc, (4) Lương - phụ cấp - hình thức trả, (5) Chế độ BHXH/BHYT/BHTN, (6) Quyền và nghĩa vụ NLĐ, (7) Quyền và nghĩa vụ NSDLĐ, (8) Điều khoản thi hành; chữ ký hai bên.\n- Nếu thử việc > 0: thêm điều khoản thử việc đúng giới hạn BLLĐ 2019 (≤60 ngày chuyên môn cao, 30 ngày trung cấp, 6 ngày khác).\n- Lương ghi cả số và chữ.\n- Văn phong trang trọng, pháp lý.",
+  "questions": [
+   {
+    "question_label": "Họ tên người lao động",
+    "field_name": "employee_name",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "employee_name",
+    "ai_hint": "Viết IN HOA"
+   },
+   {
+    "question_label": "Ngày sinh",
+    "field_name": "dob",
+    "field_type": "Date",
+    "is_required": 1,
+    "fetch_from_source": "date_of_birth"
+   },
+   {
+    "question_label": "Số CCCD",
+    "field_name": "id_no",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "custom_cccd",
+    "ai_hint": "12 chữ số"
+   },
+   {
+    "question_label": "Địa chỉ thường trú",
+    "field_name": "address",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "current_address"
+   },
+   {
+    "question_label": "Chức danh",
+    "field_name": "designation",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "designation"
+   },
+   {
+    "question_label": "Phòng ban",
+    "field_name": "department",
+    "field_type": "Data",
+    "is_required": 0,
+    "fetch_from_source": "department"
+   },
+   {
+    "question_label": "Thời hạn hợp đồng (tháng)",
+    "field_name": "duration_months",
+    "field_type": "Int",
+    "is_required": 1,
+    "default_value": "12",
+    "ai_hint": "12-36 tháng"
+   },
+   {
+    "question_label": "Ngày bắt đầu",
+    "field_name": "start_date",
+    "field_type": "Date",
+    "is_required": 1
+   },
+   {
+    "question_label": "Mức lương (VNĐ/tháng)",
+    "field_name": "salary",
+    "field_type": "Currency",
+    "is_required": 1,
+    "ai_hint": "Format có dấu chấm phân cách nghìn"
+   },
+   {
+    "question_label": "Phụ cấp (nếu có)",
+    "field_name": "allowance",
+    "field_type": "Currency",
+    "is_required": 0
+   },
+   {
+    "question_label": "Thời gian thử việc (ngày)",
+    "field_name": "probation_days",
+    "field_type": "Int",
+    "is_required": 0,
+    "default_value": "0",
+    "ai_hint": "Tối đa 60 ngày theo BLLĐ 2019"
+   },
+   {
+    "question_label": "Địa điểm làm việc",
+    "field_name": "work_location",
+    "field_type": "Data",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "HR User"
+   },
+   {
+    "role": "HR Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-PT-TM",
+  "template_code": "TPL-PT-TM",
+  "template_name": "Phiếu thu tiền mặt",
+  "category": "Phiếu & Chứng từ",
+  "icon": "🧾",
+  "is_active": 1,
+  "description": "Phiếu thu tiền mặt mẫu 01-TT TT200, render bằng Print Format (mirror Word gốc)",
+  "source_doctype": "Sales Invoice",
+  "source_required": 0,
+  "source_filter": "{\"docstatus\": 1, \"status\": [\"in\", [\"Unpaid\", \"Partly Paid\", \"Overdue\"]]}",
+  "output_format": "PDF",
+  "render_engine": "Print Format",
+  "print_format": "AIO Phiếu Thu",
+  "prompt_system": "Phiếu thu render bằng Print Format cố định nên AI chỉ cần CHUẨN HOÁ dữ liệu. Trả về HTML đơn giản gồm các dòng key: value đã được kiểm tra (tên người nộp, lý do, số tiền). Không cần định dạng phức tạp.",
+  "questions": [
+   {
+    "question_label": "Người nộp tiền",
+    "field_name": "payer",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "customer_name"
+   },
+   {
+    "question_label": "Địa chỉ",
+    "field_name": "payer_address",
+    "field_type": "Data",
+    "is_required": 0,
+    "fetch_from_source": "address_display"
+   },
+   {
+    "question_label": "Lý do nộp",
+    "field_name": "reason",
+    "field_type": "Data",
+    "is_required": 1,
+    "default_value": "Thu tiền bán hàng",
+    "ai_hint": "VD: Thanh toán hóa đơn số ..."
+   },
+   {
+    "question_label": "Số tiền (VNĐ)",
+    "field_name": "amount",
+    "field_type": "Currency",
+    "is_required": 1,
+    "fetch_from_source": "outstanding_amount"
+   },
+   {
+    "question_label": "Kèm theo (chứng từ gốc)",
+    "field_name": "attachment_count",
+    "field_type": "Data",
+    "is_required": 0,
+    "default_value": "01 hóa đơn"
+   },
+   {
+    "question_label": "Ngày lập phiếu",
+    "field_name": "voucher_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "Sales User"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-QD-BN",
+  "template_code": "TPL-QD-BN",
+  "template_name": "Quyết định bổ nhiệm",
+  "category": "Văn bản nội bộ",
+  "icon": "📋",
+  "is_active": 1,
+  "description": "Quyết định bổ nhiệm chức vụ, thể thức văn bản hành chính NĐ30/2020",
+  "source_doctype": "Employee",
+  "source_required": 1,
+  "source_filter": "{\"status\": \"Active\"}",
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "prompt_system": "Bạn là thư ký hành chính. Soạn QUYẾT ĐỊNH BỔ NHIỆM theo thể thức văn bản hành chính (Nghị định 30/2020/NĐ-CP).\n\nYÊU CẦU:\n- Trả về DUY NHẤT HTML hợp lệ, KHÔNG markdown.\n- Thể thức: Quốc hiệu - Tiêu ngữ (căn giữa); tên cơ quan {{COMPANY}}; số/ký hiệu; địa danh, ngày tháng; tên loại 'QUYẾT ĐỊNH' + trích yếu 'Về việc bổ nhiệm...'; căn cứ (Điều lệ công ty, nhu cầu công tác, năng lực); Điều 1 (bổ nhiệm ông/bà ... giữ chức ...), Điều 2 (quyền lợi, phụ cấp, hiệu lực), Điều 3 (trách nhiệm thi hành); nơi nhận; chức danh + chữ ký.\n- Văn phong hành chính trang trọng.",
+  "questions": [
+   {
+    "question_label": "Họ tên người được bổ nhiệm",
+    "field_name": "employee_name",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "employee_name"
+   },
+   {
+    "question_label": "Chức vụ hiện tại",
+    "field_name": "current_designation",
+    "field_type": "Data",
+    "is_required": 0,
+    "fetch_from_source": "designation"
+   },
+   {
+    "question_label": "Chức vụ bổ nhiệm",
+    "field_name": "new_designation",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Phòng ban/Bộ phận",
+    "field_name": "department",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "department"
+   },
+   {
+    "question_label": "Ngày hiệu lực",
+    "field_name": "effective_date",
+    "field_type": "Date",
+    "is_required": 1
+   },
+   {
+    "question_label": "Thời hạn bổ nhiệm",
+    "field_name": "term",
+    "field_type": "Data",
+    "is_required": 0,
+    "ai_hint": "VD: 3 năm, hoặc 'cho đến khi có quyết định mới'"
+   },
+   {
+    "question_label": "Mức phụ cấp chức vụ (nếu có)",
+    "field_name": "position_allowance",
+    "field_type": "Currency",
+    "is_required": 0
+   },
+   {
+    "question_label": "Người ký",
+    "field_name": "signer_name",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Chức danh người ký",
+    "field_name": "signer_title",
+    "field_type": "Data",
+    "is_required": 1,
+    "default_value": "Giám đốc"
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "HR Manager"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-BBH",
+  "template_code": "TPL-BBH",
+  "template_name": "Biên bản họp",
+  "category": "Văn bản nội bộ",
+  "icon": "🤝",
+  "is_active": 1,
+  "description": "Biên bản cuộc họp HĐQT/HĐTV/phòng ban — AI soạn toàn văn từ ý chính",
+  "source_doctype": "",
+  "source_required": 0,
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "prompt_system": "Bạn là thư ký cuộc họp chuyên nghiệp. Từ các ý chính, soạn BIÊN BẢN HỌP hoàn chỉnh, mạch lạc.\n\nYÊU CẦU:\n- Trả về DUY NHẤT HTML hợp lệ, KHÔNG markdown.\n- Cấu trúc: Quốc hiệu - Tiêu ngữ; tên cơ quan {{COMPANY}}; 'BIÊN BẢN HỌP' + tên cuộc họp; thời gian, địa điểm; thành phần (chủ trì, thư ký, tham dự); nội dung (triển khai ý chính thành mục I, II, III thành đoạn văn biên bản, KHÔNG chép lại gạch đầu dòng); thảo luận; KẾT LUẬN/QUYẾT NGHỊ (đánh số, tỷ lệ biểu quyết nếu có); biên bản kết thúc; chữ ký Chủ trì và Thư ký.\n- TRUNG THỰC với nội dung, KHÔNG bịa quyết nghị.",
+  "questions": [
+   {
+    "question_label": "Loại cuộc họp",
+    "field_name": "meeting_type",
+    "field_type": "Select",
+    "is_required": 1,
+    "field_options": "Họp HĐQT\nHọp HĐTV\nHọp Ban Giám đốc\nHọp phòng ban\nHọp giao ban"
+   },
+   {
+    "question_label": "Tên cuộc họp / Chủ đề",
+    "field_name": "meeting_title",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Thời gian họp",
+    "field_name": "meeting_datetime",
+    "field_type": "Datetime",
+    "is_required": 1
+   },
+   {
+    "question_label": "Địa điểm",
+    "field_name": "location",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Chủ trì",
+    "field_name": "chairperson",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Thư ký",
+    "field_name": "secretary",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Thành phần tham dự",
+    "field_name": "attendees",
+    "field_type": "Long Text",
+    "is_required": 1,
+    "ai_hint": "Họ tên + chức danh, mỗi người 1 dòng"
+   },
+   {
+    "question_label": "Nội dung chính (gạch đầu dòng)",
+    "field_name": "agenda_notes",
+    "field_type": "Long Text",
+    "is_required": 1,
+    "ai_hint": "Ý chính, AI triển khai thành biên bản"
+   },
+   {
+    "question_label": "Các quyết nghị / kết luận",
+    "field_name": "resolutions",
+    "field_type": "Long Text",
+    "is_required": 1,
+    "ai_hint": "Quyết định, tỷ lệ biểu quyết nếu có"
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "AI Office User"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-PC-TM",
+  "template_code": "TPL-PC-TM",
+  "template_name": "Phiếu chi tiền mặt",
+  "category": "Phiếu & Chứng từ",
+  "icon": "💸",
+  "is_active": 1,
+  "description": "Phiếu chi tiền mặt mẫu 02-TT TT200, tự điền từ hóa đơn mua hàng",
+  "source_doctype": "Purchase Invoice",
+  "source_required": 0,
+  "source_filter": "{\"docstatus\": 1, \"status\": [\"in\", [\"Unpaid\", \"Partly Paid\", \"Overdue\"]]}",
+  "output_format": "PDF",
+  "render_engine": "Print Format",
+  "print_format": "AIO Phiếu Chi",
+  "prompt_system": "Phiếu chi render bằng Print Format. AI chỉ chuẩn hoá dữ liệu, trả về HTML đơn giản key:value.",
+  "questions": [
+   {
+    "question_label": "Người nhận tiền",
+    "field_name": "payee",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "supplier_name"
+   },
+   {
+    "question_label": "Địa chỉ",
+    "field_name": "payee_address",
+    "field_type": "Data",
+    "is_required": 0,
+    "fetch_from_source": "address_display"
+   },
+   {
+    "question_label": "Lý do chi",
+    "field_name": "reason",
+    "field_type": "Data",
+    "is_required": 1,
+    "default_value": "Chi tiền mua hàng"
+   },
+   {
+    "question_label": "Số tiền (VNĐ)",
+    "field_name": "amount",
+    "field_type": "Currency",
+    "is_required": 1,
+    "fetch_from_source": "outstanding_amount"
+   },
+   {
+    "question_label": "Kèm theo",
+    "field_name": "attachment_count",
+    "field_type": "Data",
+    "is_required": 0,
+    "default_value": "01 hóa đơn"
+   },
+   {
+    "question_label": "Ngày lập phiếu",
+    "field_name": "voucher_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "Accounts User"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-BL-THANG",
+  "template_code": "TPL-BL-THANG",
+  "template_name": "Bảng thanh toán lương",
+  "category": "Nhân sự & Lương",
+  "icon": "👛",
+  "is_active": 1,
+  "description": "Bảng thanh toán lương tháng có BHXH và TNCN, từ Salary Slip",
+  "source_doctype": "Salary Slip",
+  "source_required": 1,
+  "source_filter": "{\"docstatus\": 1}",
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "prompt_system": "Bạn là kế toán lương. Soạn BẢNG THANH TOÁN LƯƠNG cho 1 nhân viên dựa trên phiếu lương.\n\nYÊU CẦU:\n- Trả về DUY NHẤT HTML hợp lệ, KHÔNG markdown.\n- Cấu trúc: tiêu đề công ty {{COMPANY}}; 'BẢNG THANH TOÁN LƯƠNG THÁNG ...'; bảng chi tiết: lương cơ bản, phụ cấp, tổng thu nhập, các khoản giảm trừ (BHXH 8%, BHYT 1.5%, BHTN 1%, TNCN), thực lãnh; thực lãnh ghi bằng số và chữ; dòng ký nhận.\n- Số liệu lấy đúng từ dữ liệu cung cấp.",
+  "questions": [
+   {
+    "question_label": "Họ tên",
+    "field_name": "employee_name",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "employee_name"
+   },
+   {
+    "question_label": "Tháng lương",
+    "field_name": "month",
+    "field_type": "Data",
+    "is_required": 1,
+    "ai_hint": "VD: 06/2026"
+   },
+   {
+    "question_label": "Tổng thu nhập (VNĐ)",
+    "field_name": "gross_pay",
+    "field_type": "Currency",
+    "is_required": 1,
+    "fetch_from_source": "gross_pay"
+   },
+   {
+    "question_label": "Tổng khấu trừ (VNĐ)",
+    "field_name": "total_deduction",
+    "field_type": "Currency",
+    "is_required": 1,
+    "fetch_from_source": "total_deduction"
+   },
+   {
+    "question_label": "Thực lãnh (VNĐ)",
+    "field_name": "net_pay",
+    "field_type": "Currency",
+    "is_required": 1,
+    "fetch_from_source": "net_pay"
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "HR User"
+   },
+   {
+    "role": "HR Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-PNK",
+  "template_code": "TPL-PNK",
+  "template_name": "Phiếu nhập kho",
+  "category": "Phiếu & Chứng từ",
+  "icon": "📥",
+  "is_active": 1,
+  "description": "Phiếu nhập kho NVL/hàng hóa mẫu 01-VT TT200, từ Stock Entry nhập",
+  "source_doctype": "Stock Entry",
+  "source_required": 0,
+  "source_filter": "{\"docstatus\": 1, \"stock_entry_type\": \"Material Receipt\"}",
+  "output_format": "PDF",
+  "render_engine": "Print Format",
+  "print_format": "AIO Phiếu Nhập Kho",
+  "prompt_system": "Phiếu nhập kho render Print Format. AI chuẩn hoá dữ liệu header, trả HTML key:value.",
+  "questions": [
+   {
+    "question_label": "Người giao hàng",
+    "field_name": "supplier_party",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Theo chứng từ số",
+    "field_name": "ref_doc",
+    "field_type": "Data",
+    "is_required": 0
+   },
+   {
+    "question_label": "Nhập tại kho",
+    "field_name": "warehouse",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Lý do nhập",
+    "field_name": "reason",
+    "field_type": "Data",
+    "is_required": 0,
+    "default_value": "Nhập mua"
+   },
+   {
+    "question_label": "Ngày nhập",
+    "field_name": "posting_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "Stock User"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-PXK",
+  "template_code": "TPL-PXK",
+  "template_name": "Phiếu xuất kho",
+  "category": "Phiếu & Chứng từ",
+  "icon": "📤",
+  "is_active": 1,
+  "description": "Phiếu xuất kho giao hàng/sản xuất/nội bộ mẫu 02-VT TT200",
+  "source_doctype": "Stock Entry",
+  "source_required": 0,
+  "source_filter": "{\"docstatus\": 1, \"stock_entry_type\": \"Material Issue\"}",
+  "output_format": "PDF",
+  "render_engine": "Print Format",
+  "print_format": "AIO Phiếu Xuất Kho",
+  "prompt_system": "Phiếu xuất kho render Print Format. AI chuẩn hoá header, trả HTML key:value.",
+  "questions": [
+   {
+    "question_label": "Người nhận hàng",
+    "field_name": "receiver",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Lý do xuất",
+    "field_name": "reason",
+    "field_type": "Data",
+    "is_required": 1,
+    "default_value": "Xuất bán"
+   },
+   {
+    "question_label": "Xuất tại kho",
+    "field_name": "warehouse",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Theo chứng từ số",
+    "field_name": "ref_doc",
+    "field_type": "Data",
+    "is_required": 0
+   },
+   {
+    "question_label": "Ngày xuất",
+    "field_name": "posting_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "Stock User"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-HDKT",
+  "template_code": "TPL-HDKT",
+  "template_name": "Hợp đồng kinh tế",
+  "category": "Hợp đồng",
+  "icon": "🤝",
+  "is_active": 1,
+  "description": "Hợp đồng mua bán hàng hóa/dịch vụ giữa các tổ chức, từ Customer",
+  "source_doctype": "Customer",
+  "source_required": 1,
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "prompt_system": "Bạn là chuyên viên pháp chế. Soạn HỢP ĐỒNG KINH TẾ mua bán hàng hóa/dịch vụ theo Bộ luật Dân sự 2015 và Luật Thương mại 2005.\n\nYÊU CẦU:\n- Trả về DUY NHẤT HTML hợp lệ, KHÔNG markdown.\n- Cấu trúc: Quốc hiệu tiêu ngữ; số HĐ; căn cứ pháp lý; Bên A (Bên bán {{COMPANY}}) và Bên B (Bên mua); các điều: (1) Đối tượng và quy cách hàng hóa, (2) Giá trị hợp đồng, (3) Phương thức thanh toán, (4) Giao nhận hàng, (5) Quyền và nghĩa vụ các bên, (6) Bảo hành (nếu có), (7) Phạt vi phạm và bồi thường, (8) Giải quyết tranh chấp, (9) Điều khoản chung; chữ ký, đóng dấu hai bên.\n- Văn phong pháp lý chặt chẽ.",
+  "questions": [
+   {
+    "question_label": "Tên Bên B (đối tác)",
+    "field_name": "party_b",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "customer_name"
+   },
+   {
+    "question_label": "Mã số thuế Bên B",
+    "field_name": "party_b_tax",
+    "field_type": "Data",
+    "is_required": 0,
+    "fetch_from_source": "tax_id"
+   },
+   {
+    "question_label": "Người đại diện Bên B",
+    "field_name": "party_b_rep",
+    "field_type": "Data",
+    "is_required": 0
+   },
+   {
+    "question_label": "Đối tượng hợp đồng",
+    "field_name": "subject",
+    "field_type": "Data",
+    "is_required": 1,
+    "ai_hint": "VD: Mua bán bánh đậu xanh"
+   },
+   {
+    "question_label": "Tổng giá trị (VNĐ)",
+    "field_name": "total_value",
+    "field_type": "Currency",
+    "is_required": 1
+   },
+   {
+    "question_label": "Phương thức thanh toán",
+    "field_name": "payment_method",
+    "field_type": "Data",
+    "is_required": 0,
+    "default_value": "Chuyển khoản"
+   },
+   {
+    "question_label": "Thời hạn giao hàng",
+    "field_name": "delivery_term",
+    "field_type": "Data",
+    "is_required": 0
+   },
+   {
+    "question_label": "Ngày ký",
+    "field_name": "sign_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "Sales User"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-BBGN",
+  "template_code": "TPL-BBGN",
+  "template_name": "Biên bản giao nhận hàng",
+  "category": "Văn bản nội bộ",
+  "icon": "🚚",
+  "is_active": 1,
+  "description": "Biên bản giao nhận hàng hóa/tài sản giữa hai bên, từ Delivery Note",
+  "source_doctype": "Delivery Note",
+  "source_required": 0,
+  "source_filter": "{\"docstatus\": 1}",
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "prompt_system": "Soạn BIÊN BẢN GIAO NHẬN HÀNG HÓA.\n\nYÊU CẦU:\n- Trả về DUY NHẤT HTML hợp lệ, KHÔNG markdown.\n- Cấu trúc: Quốc hiệu tiêu ngữ; 'BIÊN BẢN GIAO NHẬN'; thời gian, địa điểm; Bên giao {{COMPANY}}, Bên nhận; bảng danh mục hàng hóa (tên, ĐVT, số lượng, tình trạng); kết luận giao nhận; chữ ký hai bên.",
+  "questions": [
+   {
+    "question_label": "Bên nhận",
+    "field_name": "receiver_party",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "customer_name"
+   },
+   {
+    "question_label": "Địa điểm giao nhận",
+    "field_name": "location",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Danh mục hàng hóa",
+    "field_name": "items_desc",
+    "field_type": "Long Text",
+    "is_required": 1,
+    "ai_hint": "Tên, ĐVT, số lượng mỗi mặt hàng 1 dòng"
+   },
+   {
+    "question_label": "Tình trạng hàng",
+    "field_name": "condition",
+    "field_type": "Data",
+    "is_required": 0,
+    "default_value": "Nguyên vẹn, đủ số lượng"
+   },
+   {
+    "question_label": "Ngày giao nhận",
+    "field_name": "handover_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "Stock User"
+   },
+   {
+    "role": "Sales User"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-BBTL-TSCD",
+  "template_code": "TPL-BBTL-TSCD",
+  "template_name": "Biên bản thanh lý TSCĐ",
+  "category": "Văn bản nội bộ",
+  "icon": "🏗️",
+  "is_active": 1,
+  "description": "Biên bản thanh lý tài sản cố định hết khấu hao/hỏng, theo TT45/2013, từ Asset",
+  "source_doctype": "Asset",
+  "source_required": 1,
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "prompt_system": "Soạn BIÊN BẢN THANH LÝ TÀI SẢN CỐ ĐỊNH theo Thông tư 45/2013/TT-BTC.\n\nYÊU CẦU:\n- Trả về DUY NHẤT HTML hợp lệ, KHÔNG markdown.\n- Cấu trúc: Quốc hiệu tiêu ngữ; tên cơ quan {{COMPANY}}; 'BIÊN BẢN THANH LÝ TSCĐ'; căn cứ; thành phần hội đồng thanh lý; bảng thông tin TSCĐ (tên, nguyên giá, hao mòn lũy kế, giá trị còn lại); lý do thanh lý; kết luận và phương án xử lý; chữ ký hội đồng.",
+  "questions": [
+   {
+    "question_label": "Tên tài sản",
+    "field_name": "asset_name",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "asset_name"
+   },
+   {
+    "question_label": "Nguyên giá (VNĐ)",
+    "field_name": "gross_value",
+    "field_type": "Currency",
+    "is_required": 1,
+    "fetch_from_source": "gross_purchase_amount"
+   },
+   {
+    "question_label": "Giá trị còn lại (VNĐ)",
+    "field_name": "value_after_depr",
+    "field_type": "Currency",
+    "is_required": 0,
+    "fetch_from_source": "value_after_depreciation"
+   },
+   {
+    "question_label": "Lý do thanh lý",
+    "field_name": "reason",
+    "field_type": "Data",
+    "is_required": 1,
+    "ai_hint": "VD: Hết khấu hao, hư hỏng không sửa được"
+   },
+   {
+    "question_label": "Phương án xử lý",
+    "field_name": "disposal_plan",
+    "field_type": "Data",
+    "is_required": 0,
+    "default_value": "Bán phế liệu"
+   },
+   {
+    "question_label": "Ngày lập biên bản",
+    "field_name": "bb_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-BCCT",
+  "template_code": "TPL-BCCT",
+  "template_name": "Báo cáo chi phí công tác",
+  "category": "Nhân sự & Lương",
+  "icon": "✈️",
+  "is_active": 1,
+  "description": "Quyết toán chi phí chuyến công tác trong nước, từ Expense Claim",
+  "source_doctype": "Expense Claim",
+  "source_required": 0,
+  "source_filter": "{\"docstatus\": 1}",
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "prompt_system": "Soạn BÁO CÁO CHI PHÍ CÔNG TÁC.\n\nYÊU CẦU:\n- Trả về DUY NHẤT HTML hợp lệ, KHÔNG markdown.\n- Cấu trúc: tiêu đề công ty {{COMPANY}}; 'BÁO CÁO CHI PHÍ CÔNG TÁC'; thông tin người đi công tác, thời gian, địa điểm, mục đích; bảng chi tiết chi phí (khoản mục, số tiền, chứng từ); tổng cộng bằng số và chữ; đề nghị thanh toán; chữ ký người báo cáo và phê duyệt.",
+  "questions": [
+   {
+    "question_label": "Họ tên người công tác",
+    "field_name": "employee_name",
+    "field_type": "Data",
+    "is_required": 1,
+    "fetch_from_source": "employee_name"
+   },
+   {
+    "question_label": "Mục đích công tác",
+    "field_name": "purpose",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Địa điểm",
+    "field_name": "destination",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Thời gian (từ - đến)",
+    "field_name": "period",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Tổng chi phí (VNĐ)",
+    "field_name": "total_amount",
+    "field_type": "Currency",
+    "is_required": 1,
+    "fetch_from_source": "total_claimed_amount"
+   },
+   {
+    "question_label": "Chi tiết chi phí",
+    "field_name": "expense_detail",
+    "field_type": "Long Text",
+    "is_required": 1,
+    "ai_hint": "Khoản mục + số tiền mỗi dòng"
+   },
+   {
+    "question_label": "Ngày báo cáo",
+    "field_name": "report_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "HR User"
+   },
+   {
+    "role": "Accounts User"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-TB",
+  "template_code": "TPL-TB",
+  "template_name": "Thông báo",
+  "category": "Văn bản nội bộ",
+  "icon": "📢",
+  "is_active": 1,
+  "description": "Thông báo nội bộ hoặc cho khách hàng — AI soạn toàn văn",
+  "source_doctype": "",
+  "source_required": 0,
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "prompt_system": "Soạn THÔNG BÁO theo thể thức văn bản hành chính (NĐ30/2020).\n\nYÊU CẦU:\n- Trả về DUY NHẤT HTML hợp lệ, KHÔNG markdown.\n- Cấu trúc: Quốc hiệu - Tiêu ngữ; tên cơ quan {{COMPANY}}; số/ký hiệu; địa danh ngày tháng; 'THÔNG BÁO' + trích yếu; nội dung thông báo (triển khai đầy đủ, rõ ràng từ ý chính); nơi nhận; chức danh + chữ ký người ký.\n- Văn phong phù hợp đối tượng nhận (nội bộ hoặc khách hàng).",
+  "questions": [
+   {
+    "question_label": "Đối tượng nhận",
+    "field_name": "audience",
+    "field_type": "Select",
+    "is_required": 1,
+    "field_options": "Nội bộ\nKhách hàng\nĐối tác\nToàn thể"
+   },
+   {
+    "question_label": "Trích yếu (về việc)",
+    "field_name": "subject",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Nội dung chính",
+    "field_name": "content",
+    "field_type": "Long Text",
+    "is_required": 1,
+    "ai_hint": "Ý chính, AI triển khai thành thông báo hoàn chỉnh"
+   },
+   {
+    "question_label": "Người ký",
+    "field_name": "signer_name",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Chức danh người ký",
+    "field_name": "signer_title",
+    "field_type": "Data",
+    "is_required": 1,
+    "default_value": "Giám đốc"
+   },
+   {
+    "question_label": "Ngày ban hành",
+    "field_name": "issue_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "AI Office User"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Template",
+  "name": "TPL-CV",
+  "template_code": "TPL-CV",
+  "template_name": "Công văn",
+  "category": "Văn bản nội bộ",
+  "icon": "📨",
+  "is_active": 1,
+  "description": "Công văn đề nghị/phúc đáp/báo cáo — AI soạn toàn văn theo NĐ30/2020",
+  "source_doctype": "",
+  "source_required": 0,
+  "output_format": "DOCX",
+  "render_engine": "AI HTML to DOCX",
+  "prompt_system": "Soạn CÔNG VĂN theo thể thức văn bản hành chính (NĐ30/2020).\n\nYÊU CẦU:\n- Trả về DUY NHẤT HTML hợp lệ, KHÔNG markdown.\n- Cấu trúc: Quốc hiệu - Tiêu ngữ; tên cơ quan {{COMPANY}}; số/ký hiệu kèm trích yếu 'V/v ...'; địa danh ngày tháng; kính gửi; nội dung công văn (mở đầu nêu lý do/căn cứ, thân bài trình bày, kết luận đề nghị/phúc đáp); nơi nhận; chức danh + chữ ký.\n- Văn phong hành chính trang trọng, lịch sự.",
+  "questions": [
+   {
+    "question_label": "Loại công văn",
+    "field_name": "cv_type",
+    "field_type": "Select",
+    "is_required": 1,
+    "field_options": "Đề nghị\nPhúc đáp\nBáo cáo\nGiải trình"
+   },
+   {
+    "question_label": "Kính gửi",
+    "field_name": "recipient",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Trích yếu (V/v)",
+    "field_name": "subject",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Nội dung chính",
+    "field_name": "content",
+    "field_type": "Long Text",
+    "is_required": 1,
+    "ai_hint": "Ý chính, AI triển khai thành công văn hoàn chỉnh"
+   },
+   {
+    "question_label": "Người ký",
+    "field_name": "signer_name",
+    "field_type": "Data",
+    "is_required": 1
+   },
+   {
+    "question_label": "Chức danh người ký",
+    "field_name": "signer_title",
+    "field_type": "Data",
+    "is_required": 1,
+    "default_value": "Giám đốc"
+   },
+   {
+    "question_label": "Ngày ban hành",
+    "field_name": "issue_date",
+    "field_type": "Date",
+    "is_required": 1
+   }
+  ],
+  "required_roles": [
+   {
+    "role": "AI Office User"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ }
+]

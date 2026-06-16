@@ -1,0 +1,31 @@
+[
+ {
+  "doctype": "Workspace",
+  "name": "VN Office AI",
+  "title": "VN Office AI",
+  "label": "VN Office AI",
+  "module": "VN Office AI",
+  "icon": "file",
+  "public": 1,
+  "is_hidden": 0,
+  "sequence_id": 100.0,
+  "content": "[{\"id\":\"aio_h\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">VN Office AI</span>\",\"col\":12}},{\"id\":\"aio_p\",\"type\":\"paragraph\",\"data\":{\"text\":\"Soạn tài liệu nhanh (Tier 1) và phân tích kế toán AI tạo chứng từ nháp (Tier 2). Bạn quyết định, AI thực hiện.\",\"col\":12}},{\"id\":\"aio_h1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h5\\\">Tạo tài liệu nhanh</span>\",\"col\":12}},{\"id\":\"aio_s1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Soạn tài liệu mới\",\"col\":3}},{\"id\":\"aio_s2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Mẫu tài liệu\",\"col\":3}},{\"id\":\"aio_h2\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h5\\\">AI Analyst</span>\",\"col\":12}},{\"id\":\"aio_s3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Phân tích mới\",\"col\":3}},{\"id\":\"aio_s4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Loại phân tích\",\"col\":3}},{\"id\":\"aio_s5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Cấu hình AI\",\"col\":3}},{\"id\":\"aio_sp\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"aio_c1\",\"type\":\"card\",\"data\":{\"card_name\":\"Tài liệu (Tier 1)\",\"col\":4}},{\"id\":\"aio_c2\",\"type\":\"card\",\"data\":{\"card_name\":\"AI Analyst (Tier 2)\",\"col\":4}},{\"id\":\"aio_c3\",\"type\":\"card\",\"data\":{\"card_name\":\"Cấu hình\",\"col\":4}}]",
+  "shortcuts": [
+   {"type": "DocType", "link_to": "AI Office Document Request", "label": "Soạn tài liệu mới", "color": "Blue", "doc_view": "New"},
+   {"type": "DocType", "link_to": "AI Office Template", "label": "Mẫu tài liệu", "color": "Grey"},
+   {"type": "DocType", "link_to": "AI Office Analysis Job", "label": "Phân tích mới", "color": "Orange", "doc_view": "New"},
+   {"type": "DocType", "link_to": "AI Office Analysis Type", "label": "Loại phân tích", "color": "Grey"},
+   {"type": "DocType", "link_to": "AI Office Settings", "label": "Cấu hình AI", "color": "Green"}
+  ],
+  "links": [
+   {"type": "Card Break", "label": "Tài liệu (Tier 1)", "link_count": 2, "onboard": 0},
+   {"type": "Link", "link_type": "DocType", "link_to": "AI Office Document Request", "label": "Yêu cầu soạn tài liệu", "dependencies": "", "onboard": 1},
+   {"type": "Link", "link_type": "DocType", "link_to": "AI Office Template", "label": "Mẫu tài liệu", "dependencies": "", "onboard": 0},
+   {"type": "Card Break", "label": "AI Analyst (Tier 2)", "link_count": 2, "onboard": 0},
+   {"type": "Link", "link_type": "DocType", "link_to": "AI Office Analysis Job", "label": "Phân tích (Analysis Job)", "dependencies": "", "onboard": 1},
+   {"type": "Link", "link_type": "DocType", "link_to": "AI Office Analysis Type", "label": "Loại phân tích", "dependencies": "", "onboard": 0},
+   {"type": "Card Break", "label": "Cấu hình", "link_count": 1, "onboard": 0},
+   {"type": "Link", "link_type": "DocType", "link_to": "AI Office Settings", "label": "AI Office Settings", "dependencies": "", "onboard": 0}
+  ]
+ }
+]

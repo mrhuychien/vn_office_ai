@@ -1,0 +1,314 @@
+[
+ {
+  "doctype": "AI Office Analysis Type",
+  "name": "ANL-BANK-RECON",
+  "type_code": "ANL-BANK-RECON",
+  "type_name": "Đối chiếu ngân hàng",
+  "category": "Kế toán",
+  "icon": "🏦",
+  "is_active": 1,
+  "compliance_reference": "TT200/2014/TT-BTC",
+  "description": "Đối chiếu sao kê ngân hàng với Payment Entry, phát hiện giao dịch lệch, đề xuất bút toán",
+  "input_mode": "Both",
+  "accepted_file_types": ".xlsx,.csv",
+  "input_template_url": "/files/aio_templates/bank_statement_template.xlsx",
+  "query_definition": "SELECT pe.name AS pe_name, pe.posting_date, pe.payment_type, pe.paid_amount, pe.received_amount, pe.reference_no, pe.reference_date, pe.party_type, pe.party FROM `tabPayment Entry` pe WHERE pe.company = %(company)s AND pe.docstatus = 1 AND pe.posting_date BETWEEN %(from)s AND %(to)s ORDER BY pe.posting_date",
+  "query_scheduler_safe": 1,
+  "chunking_strategy": "By Row Count",
+  "max_chunk_size": 200,
+  "llm_model": "",
+  "output_doctype": "Journal Entry",
+  "output_action": "Create Draft",
+  "prompt_system": "Bạn là kế toán ngân hàng. Bạn nhận (1) các dòng SAO KÊ ngân hàng và (2) danh sách Payment Entry đã ghi sổ trong kỳ. Nhiệm vụ: ĐỐI CHIẾU từng dòng sao kê với Payment Entry.\n\nQUY TẮC:\n- Khớp theo: số tham chiếu (reference_no), số tiền, ngày (±3 ngày).\n- Dòng sao kê chưa ghi sổ (MISSING) → tạo finding đề xuất Journal Entry Bank Entry. Dòng đã khớp (MATCHED) → KHÔNG tạo finding.\n- severity: 'Warning', hoặc 'Critical' nếu số tiền > 50 triệu.\n- ai_confidence: 90-100 nếu khớp rõ, 50-70 nếu mơ hồ.\n- payload: posting_date, bank_ref, bank_account (tên TK NH), contra_account (TK đối ứng), debit, credit.\nTrả về JSON đúng schema. KHÔNG markdown.",
+  "finding_schema": "{\"findings\": [{\"severity\": \"Warning\", \"finding_type\": \"...\", \"description\": \"...\", \"source_doctype\": \"\", \"source_docname\": \"\", \"source_reference\": \"...\", \"compliance_reference\": \"\", \"ai_confidence\": 90, \"suggested_action\": \"Create Document\", \"suggested_summary\": \"...\", \"suggested_payload\": {\"posting_date\": \"YYYY-MM-DD\", \"bank_ref\": \"...\", \"bank_account\": \"...\", \"contra_account\": \"...\", \"debit\": 0, \"credit\": 0}}]}",
+  "output_mapping_jinja": "{\n  \"doctype\": \"Journal Entry\",\n  \"voucher_type\": \"Bank Entry\",\n  \"company\": \"{{ job.company }}\",\n  \"posting_date\": \"{{ p.posting_date }}\",\n  \"cheque_no\": \"{{ p.bank_ref }}\",\n  \"cheque_date\": \"{{ p.posting_date }}\",\n  \"user_remark\": \"Doi chieu NH tu dong - AIO Job {{ job.name }} - {{ p.bank_ref }}\",\n  \"accounts\": [\n    {\"account\": \"{{ p.bank_account }}\", \"debit_in_account_currency\": {{ p.debit or 0 }}, \"credit_in_account_currency\": {{ p.credit or 0 }}},\n    {\"account\": \"{{ p.contra_account }}\", \"debit_in_account_currency\": {{ p.credit or 0 }}, \"credit_in_account_currency\": {{ p.debit or 0 }}}\n  ]\n}",
+  "analyst_roles": [
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "AI Office Analyst"
+   }
+  ],
+  "reviewer_roles": [
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Analysis Type",
+  "name": "ANL-STOCK-COUNT",
+  "type_code": "ANL-STOCK-COUNT",
+  "type_name": "Cân kho / Kiểm kê hàng tồn kho",
+  "category": "Kho",
+  "icon": "📦",
+  "is_active": 1,
+  "compliance_reference": "TT200/2014/TT-BTC",
+  "description": "So sánh số kiểm kê thực tế với tồn kho hệ thống, đề xuất Stock Reconciliation",
+  "input_mode": "Both",
+  "accepted_file_types": ".xlsx,.csv",
+  "input_template_url": "/files/aio_templates/stock_count_template.xlsx",
+  "query_definition": "SELECT b.item_code, i.item_name, b.warehouse, b.actual_qty AS system_qty, b.valuation_rate, i.stock_uom FROM `tabBin` b JOIN `tabItem` i ON i.name = b.item_code JOIN `tabWarehouse` w ON w.name = b.warehouse WHERE w.company = %(company)s AND b.actual_qty != 0 ORDER BY b.warehouse, b.item_code",
+  "query_scheduler_safe": 1,
+  "chunking_strategy": "By Item",
+  "max_chunk_size": 300,
+  "output_doctype": "Stock Reconciliation",
+  "output_action": "Create Draft",
+  "prompt_system": "Bạn là kế toán kho. Bạn nhận (1) số KIỂM KÊ THỰC TẾ (item_code, warehouse, counted_qty) và (2) tồn kho HỆ THỐNG (system_qty). Phát hiện CHÊNH LỆCH.\n\nQUY TẮC:\n- Mỗi item × warehouse có counted_qty ≠ system_qty → tạo finding.\n- diff = counted_qty − system_qty (>0 thừa, <0 thiếu).\n- severity theo giá trị chênh (=|diff|×valuation_rate): <1tr Info, <10tr Warning, ≥10tr Critical.\n- payload: item_code, warehouse, actual_qty (=counted_qty), valuation_rate, posting_date.\n- finding_type: 'Thừa kho' hoặc 'Thiếu kho'. KHÔNG tạo finding cho item khớp.\nTrả về JSON đúng schema. KHÔNG markdown.",
+  "finding_schema": "{\"findings\": [{\"severity\": \"Warning\", \"finding_type\": \"...\", \"description\": \"...\", \"source_doctype\": \"\", \"source_docname\": \"\", \"source_reference\": \"...\", \"compliance_reference\": \"\", \"ai_confidence\": 90, \"suggested_action\": \"Create Document\", \"suggested_summary\": \"...\", \"suggested_payload\": {\"item_code\": \"...\", \"warehouse\": \"...\", \"actual_qty\": 0, \"valuation_rate\": 0, \"posting_date\": \"YYYY-MM-DD\"}}]}",
+  "output_mapping_jinja": "{\n  \"doctype\": \"Stock Reconciliation\",\n  \"purpose\": \"Stock Reconciliation\",\n  \"company\": \"{{ job.company }}\",\n  \"posting_date\": \"{{ p.posting_date }}\",\n  \"set_posting_time\": 1,\n  \"items\": [\n    {\"item_code\": \"{{ p.item_code }}\", \"warehouse\": \"{{ p.warehouse }}\", \"qty\": {{ p.actual_qty }}, \"valuation_rate\": {{ p.valuation_rate or 0 }}}\n  ]\n}",
+  "analyst_roles": [
+   {
+    "role": "Stock User"
+   },
+   {
+    "role": "AI Office Analyst"
+   }
+  ],
+  "reviewer_roles": [
+   {
+    "role": "Stock Manager"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Analysis Type",
+  "name": "ANL-DEBT-PROV",
+  "type_code": "ANL-DEBT-PROV",
+  "type_name": "Xử lý công nợ khó đòi (TT48/2019)",
+  "category": "Kế toán",
+  "icon": "⚠️",
+  "is_active": 1,
+  "compliance_reference": "TT48/2019/TT-BTC Điều 6",
+  "description": "Phân tích tuổi nợ, trích lập dự phòng theo tỷ lệ TT48/2019, đề xuất bút toán dự phòng",
+  "input_mode": "Internal Query Only",
+  "accepted_file_types": "",
+  "query_definition": "SELECT si.name AS invoice, si.customer, si.customer_name, si.posting_date, si.due_date, si.outstanding_amount, si.grand_total, DATEDIFF(%(to)s, si.due_date) AS overdue_days FROM `tabSales Invoice` si WHERE si.company = %(company)s AND si.docstatus = 1 AND si.outstanding_amount > 0 AND si.due_date < %(to)s AND DATEDIFF(%(to)s, si.due_date) >= 180 ORDER BY overdue_days DESC",
+  "query_scheduler_safe": 1,
+  "chunking_strategy": "By Row Count",
+  "max_chunk_size": 150,
+  "output_doctype": "Journal Entry",
+  "output_action": "Create Draft",
+  "prompt_system": "Bạn là kế toán trưởng am hiểu Thông tư 48/2019/TT-BTC. Bạn nhận danh sách hóa đơn còn nợ quá hạn (overdue_days). Tính mức trích lập dự phòng nợ phải thu khó đòi.\n\nTỶ LỆ TRÍCH LẬP (TT48/2019 Điều 6, trên outstanding_amount):\n- 180–364 ngày: 30%\n- 365–729 ngày: 50%\n- 730–1094 ngày: 70%\n- ≥1095 ngày: 100%\n\nQUY TẮC:\n- Mỗi hóa đơn quá hạn ≥180 ngày → 1 finding.\n- provision_amount = outstanding_amount × tỷ lệ.\n- severity: Info(30%), Warning(50-70%), Critical(100%).\n- compliance_reference: VD 'TT48/2019 Điều 6 — 30% (quá hạn 6-12 tháng)'.\n- payload: customer, invoice, provision_amount, rate, overdue_days, posting_date.\n- source_doctype='Sales Invoice', source_docname=<invoice>.\nTrả về JSON đúng schema. KHÔNG markdown.",
+  "finding_schema": "{\"findings\": [{\"severity\": \"Warning\", \"finding_type\": \"...\", \"description\": \"...\", \"source_doctype\": \"\", \"source_docname\": \"\", \"source_reference\": \"...\", \"compliance_reference\": \"\", \"ai_confidence\": 90, \"suggested_action\": \"Create Document\", \"suggested_summary\": \"...\", \"suggested_payload\": {\"customer\": \"...\", \"invoice\": \"...\", \"provision_amount\": 0, \"rate\": 0.3, \"overdue_days\": 200, \"posting_date\": \"YYYY-MM-DD\"}}]}",
+  "output_mapping_jinja": "GROUP_BY_JOB",
+  "analyst_roles": [
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "AI Office Analyst"
+   }
+  ],
+  "reviewer_roles": [
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Analysis Type",
+  "name": "ANL-REBUILD-LEDGER",
+  "type_code": "ANL-REBUILD-LEDGER",
+  "type_name": "Làm lại sổ / Tái cấu trúc sổ sách",
+  "category": "Kế toán",
+  "icon": "📒",
+  "is_active": 1,
+  "compliance_reference": "TT200/2014/TT-BTC",
+  "description": "Upload chứng từ thô, AI đề xuất định khoản từng nghiệp vụ, kế toán duyệt rồi tạo bút toán",
+  "input_mode": "File Upload Only",
+  "accepted_file_types": ".xlsx,.csv",
+  "input_template_url": "/files/aio_templates/raw_vouchers_template.xlsx",
+  "query_definition": "",
+  "query_scheduler_safe": 1,
+  "chunking_strategy": "By Row Count",
+  "max_chunk_size": 100,
+  "output_doctype": "Journal Entry",
+  "output_action": "Create Draft",
+  "prompt_system": "Bạn là kế toán tổng hợp. Bạn nhận chứng từ thô (mỗi dòng 1 nghiệp vụ: ngày, diễn giải, số tiền, loại). Đề xuất ĐỊNH KHOẢN theo hệ thống tài khoản TT200.\n\nQUY TẮC:\n- Mỗi nghiệp vụ → 1 finding với cặp Nợ/Có phù hợp.\n- payload: posting_date, remark, debit_account (tên TK), credit_account, amount, voucher_type.\n- ai_confidence thấp nếu diễn giải mơ hồ (→ kế toán review kỹ).\n- severity: Info mặc định, Warning nếu nghiệp vụ bất thường.\nTrả về JSON đúng schema. KHÔNG markdown.",
+  "finding_schema": "{\"findings\": [{\"severity\": \"Warning\", \"finding_type\": \"...\", \"description\": \"...\", \"source_doctype\": \"\", \"source_docname\": \"\", \"source_reference\": \"...\", \"compliance_reference\": \"\", \"ai_confidence\": 90, \"suggested_action\": \"Create Document\", \"suggested_summary\": \"...\", \"suggested_payload\": {\"posting_date\": \"YYYY-MM-DD\", \"remark\": \"...\", \"debit_account\": \"...\", \"credit_account\": \"...\", \"amount\": 0, \"voucher_type\": \"Journal Entry\"}}]}",
+  "output_mapping_jinja": "{\n  \"doctype\": \"Journal Entry\",\n  \"voucher_type\": \"{{ p.voucher_type or 'Journal Entry' }}\",\n  \"company\": \"{{ job.company }}\",\n  \"posting_date\": \"{{ p.posting_date }}\",\n  \"user_remark\": \"{{ p.remark }} - AIO Job {{ job.name }}\",\n  \"accounts\": [\n    {\"account\": \"{{ p.debit_account }}\", \"debit_in_account_currency\": {{ p.amount or 0 }}},\n    {\"account\": \"{{ p.credit_account }}\", \"credit_in_account_currency\": {{ p.amount or 0 }}}\n  ]\n}",
+  "analyst_roles": [
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "AI Office Analyst"
+   }
+  ],
+  "reviewer_roles": [
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Analysis Type",
+  "name": "ANL-TNDN-EXPENSE",
+  "type_code": "ANL-TNDN-EXPENSE",
+  "type_name": "Kiểm tra chi phí trước quyết toán TNDN",
+  "category": "Thuế",
+  "icon": "🔍",
+  "is_active": 1,
+  "compliance_reference": "TT96/2015/TT-BTC; Luật Thuế TNDN",
+  "description": "Rà soát chi phí, phát hiện khoản không được trừ khi tính thuế TNDN, lập báo cáo",
+  "input_mode": "Internal Query Only",
+  "accepted_file_types": "",
+  "query_definition": "SELECT gle.account, gle.posting_date, gle.debit, gle.voucher_type, gle.voucher_no, gle.against, gle.remarks FROM `tabGL Entry` gle JOIN `tabAccount` acc ON acc.name = gle.account WHERE gle.company = %(company)s AND gle.is_cancelled = 0 AND acc.root_type = 'Expense' AND gle.posting_date BETWEEN %(from)s AND %(to)s AND gle.debit > 0 ORDER BY gle.debit DESC",
+  "query_scheduler_safe": 1,
+  "chunking_strategy": "By Account",
+  "max_chunk_size": 300,
+  "output_doctype": "",
+  "output_action": "Report Only",
+  "prompt_system": "Bạn là chuyên viên thuế. Bạn nhận các bút toán CHI PHÍ trong kỳ. Phát hiện khoản chi phí KHÔNG ĐƯỢC TRỪ khi tính thuế TNDN theo TT96/2015 và Luật Thuế TNDN.\n\nDẤU HIỆU chi phí không được trừ: không hóa đơn chứng từ hợp lệ; vượt định mức (chi phí lãi vay, trang phục, từ thiện); chi không phục vụ SXKD; chi phạt hành chính.\nQUY TẮC:\n- Mỗi khoản nghi vấn → 1 finding, suggested_action='Manual Review'.\n- severity theo mức độ chắc chắn và giá trị.\n- compliance_reference: điều khoản TT96.\n- KHÔNG tạo bút toán (chỉ báo cáo). payload: account, voucher_no, amount, ly_do.\nTrả về JSON đúng schema. KHÔNG markdown.",
+  "finding_schema": "{\"findings\": [{\"severity\": \"Warning\", \"finding_type\": \"...\", \"description\": \"...\", \"source_doctype\": \"\", \"source_docname\": \"\", \"source_reference\": \"...\", \"compliance_reference\": \"\", \"ai_confidence\": 90, \"suggested_action\": \"Create Document\", \"suggested_summary\": \"...\", \"suggested_payload\": {\"account\": \"...\", \"voucher_no\": \"...\", \"amount\": 0, \"ly_do\": \"...\"}}]}",
+  "output_mapping_jinja": "",
+  "analyst_roles": [
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "AI Office Analyst"
+   }
+  ],
+  "reviewer_roles": [
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Analysis Type",
+  "name": "ANL-PERIOD-CLOSE",
+  "type_code": "ANL-PERIOD-CLOSE",
+  "type_name": "Bút toán điều chỉnh cuối kỳ",
+  "category": "Kế toán",
+  "icon": "📆",
+  "is_active": 1,
+  "compliance_reference": "TT200/2014/TT-BTC",
+  "description": "Đề xuất bút toán kết chuyển doanh thu/chi phí/lãi lỗ cuối kỳ (511→911, 632→911, 911→421)",
+  "input_mode": "Internal Query Only",
+  "accepted_file_types": "",
+  "query_definition": "SELECT acc.account_number, acc.name AS account, acc.root_type, SUM(gle.debit) AS total_debit, SUM(gle.credit) AS total_credit FROM `tabGL Entry` gle JOIN `tabAccount` acc ON acc.name = gle.account WHERE gle.company = %(company)s AND gle.is_cancelled = 0 AND gle.posting_date BETWEEN %(from)s AND %(to)s AND (acc.account_number LIKE '5%%' OR acc.account_number LIKE '6%%' OR acc.account_number LIKE '7%%' OR acc.account_number LIKE '8%%') GROUP BY acc.name HAVING (total_debit - total_credit) != 0",
+  "query_scheduler_safe": 1,
+  "chunking_strategy": "None",
+  "max_chunk_size": 500,
+  "output_doctype": "Journal Entry",
+  "output_action": "Create Draft",
+  "prompt_system": "Bạn là kế toán tổng hợp. Bạn nhận số dư các TK loại 5,6,7,8 cuối kỳ. Đề xuất BÚT TOÁN KẾT CHUYỂN về TK 911 và xác định kết quả kinh doanh theo TT200.\n\nQUY TẮC:\n- Kết chuyển doanh thu (511,515,711) → 911 (ghi Nợ 5xx/7xx, Có 911).\n- Kết chuyển chi phí (632,635,641,642,811) → 911 (ghi Nợ 911, Có 6xx/8xx).\n- Mỗi bút toán kết chuyển → 1 finding.\n- payload: posting_date, remark, debit_account, credit_account, amount, voucher_type='Journal Entry'.\nTrả về JSON đúng schema. KHÔNG markdown.",
+  "finding_schema": "{\"findings\": [{\"severity\": \"Warning\", \"finding_type\": \"...\", \"description\": \"...\", \"source_doctype\": \"\", \"source_docname\": \"\", \"source_reference\": \"...\", \"compliance_reference\": \"\", \"ai_confidence\": 90, \"suggested_action\": \"Create Document\", \"suggested_summary\": \"...\", \"suggested_payload\": {\"posting_date\": \"YYYY-MM-DD\", \"remark\": \"Ket chuyen ...\", \"debit_account\": \"...\", \"credit_account\": \"...\", \"amount\": 0, \"voucher_type\": \"Journal Entry\"}}]}",
+  "output_mapping_jinja": "{\n  \"doctype\": \"Journal Entry\",\n  \"voucher_type\": \"{{ p.voucher_type or 'Journal Entry' }}\",\n  \"company\": \"{{ job.company }}\",\n  \"posting_date\": \"{{ p.posting_date }}\",\n  \"user_remark\": \"{{ p.remark }} - AIO Job {{ job.name }}\",\n  \"accounts\": [\n    {\"account\": \"{{ p.debit_account }}\", \"debit_in_account_currency\": {{ p.amount or 0 }}},\n    {\"account\": \"{{ p.credit_account }}\", \"credit_in_account_currency\": {{ p.amount or 0 }}}\n  ]\n}",
+  "analyst_roles": [
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "AI Office Analyst"
+   }
+  ],
+  "reviewer_roles": [
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Analysis Type",
+  "name": "ANL-FX-REVAL",
+  "type_code": "ANL-FX-REVAL",
+  "type_name": "Đánh giá lại tỷ giá ngoại tệ",
+  "category": "Kế toán",
+  "icon": "💱",
+  "is_active": 1,
+  "compliance_reference": "TT200/2014/TT-BTC Điều 69",
+  "description": "Đánh giá lại số dư gốc ngoại tệ cuối kỳ theo tỷ giá NHNN, đề xuất bút toán chênh lệch tỷ giá",
+  "input_mode": "Both",
+  "accepted_file_types": ".xlsx,.csv",
+  "input_template_url": "/files/aio_templates/fx_rate_template.xlsx",
+  "query_definition": "SELECT gle.account, gle.account_currency, SUM(gle.debit_in_account_currency - gle.credit_in_account_currency) AS balance_fcy, SUM(gle.debit - gle.credit) AS balance_vnd FROM `tabGL Entry` gle WHERE gle.company = %(company)s AND gle.is_cancelled = 0 AND gle.account_currency != 'VND' AND gle.posting_date <= %(to)s GROUP BY gle.account, gle.account_currency HAVING balance_fcy != 0",
+  "query_scheduler_safe": 1,
+  "chunking_strategy": "By Row Count",
+  "max_chunk_size": 100,
+  "output_doctype": "Journal Entry",
+  "output_action": "Create Draft",
+  "prompt_system": "Bạn là kế toán. Bạn nhận (1) số dư các TK gốc ngoại tệ cuối kỳ (balance_fcy nguyên tệ, balance_vnd đang ghi sổ) và (2) tỷ giá NHNN cuối kỳ. Tính chênh lệch tỷ giá đánh giá lại theo TT200 Điều 69.\n\nQUY TẮC:\n- Giá trị đánh giá lại = balance_fcy × tỷ giá cuối kỳ.\n- Chênh lệch = giá trị đánh giá lại − balance_vnd.\n- Lãi tỷ giá → Có 413/Nợ TK gốc; Lỗ tỷ giá → Nợ 413/Có TK gốc (TK 4131).\n- Mỗi TK có chênh lệch → 1 finding.\n- payload: posting_date, remark, debit_account, credit_account, amount, voucher_type='Journal Entry'.\nTrả về JSON đúng schema. KHÔNG markdown.",
+  "finding_schema": "{\"findings\": [{\"severity\": \"Warning\", \"finding_type\": \"...\", \"description\": \"...\", \"source_doctype\": \"\", \"source_docname\": \"\", \"source_reference\": \"...\", \"compliance_reference\": \"\", \"ai_confidence\": 90, \"suggested_action\": \"Create Document\", \"suggested_summary\": \"...\", \"suggested_payload\": {\"posting_date\": \"YYYY-MM-DD\", \"remark\": \"Danh gia lai ty gia ...\", \"debit_account\": \"...\", \"credit_account\": \"...\", \"amount\": 0, \"voucher_type\": \"Journal Entry\"}}]}",
+  "output_mapping_jinja": "{\n  \"doctype\": \"Journal Entry\",\n  \"voucher_type\": \"{{ p.voucher_type or 'Journal Entry' }}\",\n  \"company\": \"{{ job.company }}\",\n  \"posting_date\": \"{{ p.posting_date }}\",\n  \"user_remark\": \"{{ p.remark }} - AIO Job {{ job.name }}\",\n  \"accounts\": [\n    {\"account\": \"{{ p.debit_account }}\", \"debit_in_account_currency\": {{ p.amount or 0 }}},\n    {\"account\": \"{{ p.credit_account }}\", \"credit_in_account_currency\": {{ p.amount or 0 }}}\n  ]\n}",
+  "analyst_roles": [
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "AI Office Analyst"
+   }
+  ],
+  "reviewer_roles": [
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ },
+ {
+  "doctype": "AI Office Analysis Type",
+  "name": "ANL-PIT-SETTLE",
+  "type_code": "ANL-PIT-SETTLE",
+  "type_name": "Quyết toán thuế TNCN",
+  "category": "Thuế",
+  "icon": "🧮",
+  "is_active": 1,
+  "compliance_reference": "TT111/2013/TT-BTC; Luật Thuế TNCN",
+  "description": "Tính lại thu nhập chịu thuế TNCN cả năm, đối chiếu số đã khấu trừ, lập báo cáo hoàn/thu thêm",
+  "input_mode": "Internal Query Only",
+  "accepted_file_types": "",
+  "query_definition": "SELECT ss.employee, ss.employee_name, COUNT(*) AS so_thang, SUM(ss.gross_pay) AS tong_thu_nhap, SUM(ss.total_deduction) AS tong_khau_tru, SUM(ss.net_pay) AS tong_thuc_lanh FROM `tabSalary Slip` ss WHERE ss.company = %(company)s AND ss.docstatus = 1 AND ss.start_date BETWEEN %(from)s AND %(to)s GROUP BY ss.employee ORDER BY tong_thu_nhap DESC",
+  "query_scheduler_safe": 1,
+  "chunking_strategy": "By Row Count",
+  "max_chunk_size": 100,
+  "output_doctype": "",
+  "output_action": "Report Only",
+  "prompt_system": "Bạn là chuyên viên thuế TNCN. Bạn nhận tổng thu nhập cả năm của từng nhân viên. Tính lại thuế TNCN quyết toán theo biểu lũy tiến TT111/2013 và đối chiếu số đã khấu trừ.\n\nQUY TẮC:\n- Giảm trừ bản thân 11 triệu/tháng, người phụ thuộc 4.4 triệu/người/tháng (giả định 0 nếu không có dữ liệu — cảnh báo cần bổ sung).\n- Áp biểu lũy tiến 7 bậc tính thuế cả năm.\n- So với tổng đã khấu trừ → chênh lệch hoàn (âm) hoặc thu thêm (dương).\n- Mỗi nhân viên → 1 finding, suggested_action='Manual Review', KHÔNG tạo bút toán.\n- severity: Critical nếu chênh lớn, Warning nếu thiếu dữ liệu phụ thuộc.\n- payload: employee, employee_name, thue_tinh_lai, da_khau_tru, chenh_lech.\nTrả về JSON đúng schema. KHÔNG markdown.",
+  "finding_schema": "{\"findings\": [{\"severity\": \"Warning\", \"finding_type\": \"...\", \"description\": \"...\", \"source_doctype\": \"\", \"source_docname\": \"\", \"source_reference\": \"...\", \"compliance_reference\": \"\", \"ai_confidence\": 90, \"suggested_action\": \"Create Document\", \"suggested_summary\": \"...\", \"suggested_payload\": {\"employee\": \"...\", \"employee_name\": \"...\", \"thue_tinh_lai\": 0, \"da_khau_tru\": 0, \"chenh_lech\": 0}}]}",
+  "output_mapping_jinja": "",
+  "analyst_roles": [
+   {
+    "role": "HR User"
+   },
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "AI Office Analyst"
+   }
+  ],
+  "reviewer_roles": [
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "AI Office Manager"
+   }
+  ]
+ }
+]

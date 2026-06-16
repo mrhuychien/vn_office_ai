@@ -1,0 +1,97 @@
+/* VN Office AI — custom styles.
+   QUY ƯỚC: mọi class prefix `aio-` để tránh xung đột Bootstrap của ERPNext
+   (.modal/.btn/.card/.container/.badge/.overlay sẽ bị Bootstrap override). */
+
+.aio-doc-preview {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md, 8px);
+    padding: 20px 24px;
+    background: var(--card-bg, #fff);
+    max-height: 640px;
+    overflow-y: auto;
+    font-family: "Times New Roman", Georgia, serif;
+    line-height: 1.55;
+}
+
+.aio-doc-preview.aio-empty {
+    color: var(--text-muted);
+    font-style: italic;
+    font-family: var(--font-stack, sans-serif);
+    text-align: center;
+    padding: 40px 24px;
+}
+
+.aio-doc-preview h1,
+.aio-doc-preview h2,
+.aio-doc-preview h3 {
+    text-align: center;
+    margin: 8px 0;
+}
+
+.aio-doc-preview table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+}
+
+.aio-doc-preview table td,
+.aio-doc-preview table th {
+    border: 1px solid var(--border-color);
+    padding: 6px 10px;
+}
+
+.aio-error-hint {
+    color: var(--red-600, #c0392b);
+    font-weight: 500;
+}
+
+/* Card grid kiểu dashboard (Phase 2 Workspace) */
+.aio-template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.aio-template-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md, 8px);
+    padding: 16px;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    background: var(--card-bg, #fff);
+}
+
+.aio-template-card:hover {
+    border-color: var(--primary, #2490ef);
+    box-shadow: var(--shadow-sm);
+}
+
+.aio-template-card .aio-card-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.aio-template-card .aio-card-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.aio-template-card .aio-card-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Tier 2 — review summary pills (Analysis Job) */
+.aio-review-summary { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 4px 0; }
+.aio-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    background: var(--bg-gray, #f0f0f0);
+    border: 1px solid var(--border-color);
+}
+.aio-pill.aio-pending { background: var(--yellow-100, #fff3cd); }
+.aio-pill.aio-approved { background: var(--green-100, #d4edda); }
+.aio-pill.aio-rejected { background: var(--red-100, #f8d7da); }
+.aio-pill.aio-critical { background: var(--red-600, #c0392b); color: #fff; font-weight: 600; }
