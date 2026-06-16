@@ -104,3 +104,52 @@ Một file fixture + một comment. Hoàn tác: `git revert <commit>` hoặc đ�
   ```
 - Sau khi sửa: **bắt buộc** cài lại trên site SẠCH (`drop-site` + `new-site` rồi
   `install-app`) — không `install-app --force` lên site bẩn (che mất bug).
+
+---
+
+# Domino 2 — `workspace.json` thiếu reqd `type` (parent Workspace)
+
+## Triệu chứng (sau khi fix notification.json)
+Install qua được notification.json + print_format.json, chết ở file fixture **cuối**
+(`workspace.json`):
+```
+frappe.exceptions.MandatoryError: [Workspace, VN Office AI]: type
+missing = [('type', 'Error: Value missing for Workspace: Type')]
+d = Workspace Link (h8gdd9o1bj)
+```
+
+## Root cause (1 câu)
+Workspace (parent) trong Frappe v16 có field **`type`** (Select `Workspace/Link/URL`,
+`default="Workspace"`, **`reqd=1`**); fixture không có `type`, và **fixtures không áp
+default** nên `_validate_mandatory` báo thiếu → install vỡ.
+
+## Evidence
+- `desk/doctype/workspace/workspace.json` (v16): field `type` `reqd:1`, `default:"Workspace"`.
+- Bẫy biến vòng lặp (đúng như playbook B1): traceback in `d = Workspace Link (...)`
+  nhưng đó chỉ là biến lặp cuối frame. Tin format `[doctype, name]: field` →
+  **parent `Workspace VN Office AI` thiếu `type`**, KHÔNG phải child Workspace Link.
+- Sweep tĩnh parent + 8 `links` + 5 `shortcuts` vs schema thật v16 → chỉ **parent.type**
+  thiếu; mọi child đủ reqd.
+
+## Fix
+`fixtures/workspace.json`: thêm `"type": "Workspace"` vào parent. (workspace.json là
+fixture cuối theo alphabet → hết domino, install chạy trọn.)
+
+## Rollback
+Xoá dòng `"type": "Workspace"` → tái hiện MandatoryError.
+
+## Regression guard (chạy trước khi commit fixtures)
+```bash
+python3 - <<'PY'
+import json
+ws=json.load(open('vn_office_ai/fixtures/workspace.json'))[0]
+assert ws.get('type'), "Workspace parent thiếu reqd 'type'"
+print('OK workspace.type =', ws['type'])
+PY
+```
+
+## Bài học chung (cả 2 domino)
+Fixtures import chạy **validate đầy đủ** (`data_import=True`) và **không áp field
+default**. Mọi reqd field phải ghi tường minh trong JSON; mọi doctype có guard
+`is_standard`/standard không-exempt-install (Notification, Dashboard, Chart) không
+được ship `is_standard=1` qua fixtures.

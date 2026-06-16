@@ -4,6 +4,7 @@
   "name": "VN Office AI",
   "title": "VN Office AI",
   "label": "VN Office AI",
+  "type": "Workspace",
   "module": "VN Office AI",
   "icon": "file",
   "public": 1,
