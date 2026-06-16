@@ -1,4 +1,4 @@
-"""OpenRouter client wrapper cho VN Office AI.
+"""LLM client wrapper cho VN Office AI (OpenRouter + Direct Gemini).
 
 Đọc API key (encrypted) + model từ AI Office Settings. Trả về dict chuẩn hoá
 gồm text, token usage, cost ước tính, duration.
@@ -10,7 +10,7 @@ import json
 import frappe
 import requests
 
-# USD / 1M tokens (input, output) — fallback khi OpenRouter không trả usage.cost.
+# USD / 1M tokens (input, output) — fallback khi provider không trả usage.cost.
 # Cập nhật định kỳ theo bảng giá OpenRouter.
 OPENROUTER_PRICING = {
     "google/gemini-2.5-flash": (0.30, 2.50),
@@ -30,9 +30,35 @@ def get_settings():
     return s
 
 
+def _resolve_endpoint(s, model):
+    """Chọn (api_key, base_url, api_model, provider) theo llm_provider.
+
+    Gemini cung cấp endpoint OpenAI-compatible nên tái sử dụng nguyên luồng
+    /chat/completions; chỉ khác key, base URL và tên model (Gemini bỏ prefix
+    'google/', vd 'google/gemini-2.5-flash' → 'gemini-2.5-flash').
+    """
+    provider = s.llm_provider or "OpenRouter"
+
+    if provider == "Direct Gemini":
+        api_key = s.get_password("gemini_api_key")
+        if not api_key:
+            frappe.throw("Chưa cấu hình Gemini API Key trong AI Office Settings.")
+        base_url = (s.gemini_base_url
+                    or "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
+        api_model = model[len("google/"):] if model.startswith("google/") else model
+        return api_key, base_url, api_model, provider
+
+    # Mặc định: OpenRouter (Direct Anthropic/OpenAI hiện route chung qua OpenRouter)
+    api_key = s.get_password("openrouter_api_key")
+    if not api_key:
+        frappe.throw("Chưa cấu hình OpenRouter API Key trong AI Office Settings.")
+    base_url = (s.openrouter_base_url or "https://openrouter.ai/api/v1").rstrip("/")
+    return api_key, base_url, model, provider
+
+
 def chat_completion(messages, *, model=None, max_tokens=None,
                     response_format=None, purpose="document"):
-    """Gọi OpenRouter chat completions.
+    """Gọi LLM qua endpoint OpenAI-compatible (OpenRouter hoặc Direct Gemini).
 
     Args:
         messages: list[{"role": "system"|"user"|"assistant", "content": str}]
@@ -52,12 +78,10 @@ def chat_completion(messages, *, model=None, max_tokens=None,
         if model not in allowed:
             frappe.throw(f"Model {model} không nằm trong whitelist.")
 
-    api_key = s.get_password("openrouter_api_key")
-    if not api_key:
-        frappe.throw("Chưa cấu hình OpenRouter API Key trong AI Office Settings.")
+    api_key, base_url, api_model, provider = _resolve_endpoint(s, model)
 
     payload = {
-        "model": model,
+        "model": api_model,
         "messages": messages,
         "max_tokens": max_tokens or s.max_tokens_per_request or 8000,
     }
@@ -67,11 +91,12 @@ def chat_completion(messages, *, model=None, max_tokens=None,
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": frappe.utils.get_url(),
-        "X-Title": "VN Office AI",
     }
+    if provider == "OpenRouter":
+        # Header attribution riêng của OpenRouter (provider khác bỏ qua nếu gửi)
+        headers["HTTP-Referer"] = frappe.utils.get_url()
+        headers["X-Title"] = "VN Office AI"
 
-    base_url = (s.openrouter_base_url or "https://openrouter.ai/api/v1").rstrip("/")
     timeout = s.request_timeout_seconds or 120
 
     t0 = time.monotonic()
@@ -82,9 +107,9 @@ def chat_completion(messages, *, model=None, max_tokens=None,
     except requests.exceptions.Timeout:
         raise LLMError("LLM timeout — thử lại hoặc giảm phạm vi dữ liệu.")
     except requests.exceptions.HTTPError:
-        raise LLMError(f"OpenRouter lỗi {resp.status_code}: {resp.text[:300]}")
+        raise LLMError(f"{provider} lỗi {resp.status_code}: {resp.text[:300]}")
     except requests.exceptions.RequestException as e:
-        raise LLMError(f"Lỗi kết nối OpenRouter: {e}")
+        raise LLMError(f"Lỗi kết nối {provider}: {e}")
 
     duration_ms = int((time.monotonic() - t0) * 1000)
     data = resp.json()
@@ -92,7 +117,7 @@ def chat_completion(messages, *, model=None, max_tokens=None,
     try:
         text = data["choices"][0]["message"]["content"]
     except (KeyError, IndexError):
-        raise LLMError(f"Phản hồi OpenRouter không hợp lệ: {json.dumps(data)[:300]}")
+        raise LLMError(f"Phản hồi {provider} không hợp lệ: {json.dumps(data)[:300]}")
 
     usage = data.get("usage", {}) or {}
     in_tok = usage.get("prompt_tokens", 0)

@@ -31,6 +31,7 @@ def create_default_settings():
         s.fallback_model = "anthropic/claude-haiku-4.5"
         s.analyst_model = "anthropic/claude-sonnet-4.7"
         s.openrouter_base_url = "https://openrouter.ai/api/v1"
+        s.gemini_base_url = "https://generativelanguage.googleapis.com/v1beta/openai"
         s.mask_pii_before_llm = 1
         s.max_requests_per_user_per_day = 100
         s.request_timeout_seconds = 120
