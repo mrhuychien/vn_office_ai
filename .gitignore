@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Frappe / bench
+*.swp
+tags
+node_modules/
+.venv/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
