@@ -2,7 +2,7 @@
  {
   "doctype": "Notification",
   "name": "AIO Job Ready For Review",
-  "is_standard": 1,
+  "is_standard": 0,
   "module": "VN Office AI",
   "subject": "[VN Office AI] Job {{ doc.name }} đã phân tích xong — chờ duyệt",
   "document_type": "AI Office Analysis Job",
@@ -20,7 +20,7 @@
  {
   "doctype": "Notification",
   "name": "AIO Job Critical Alert",
-  "is_standard": 1,
+  "is_standard": 0,
   "module": "VN Office AI",
   "subject": "[VN Office AI] ⚠️ Job {{ doc.name }} có {{ doc.critical_findings }} phát hiện nghiêm trọng",
   "document_type": "AI Office Analysis Job",
@@ -38,7 +38,7 @@
  {
   "doctype": "Notification",
   "name": "AIO Job Committed",
-  "is_standard": 1,
+  "is_standard": 0,
   "module": "VN Office AI",
   "subject": "[VN Office AI] Job {{ doc.name }} đã tạo chứng từ nháp",
   "document_type": "AI Office Analysis Job",
@@ -56,7 +56,7 @@
  {
   "doctype": "Notification",
   "name": "AIO Job Failed",
-  "is_standard": 1,
+  "is_standard": 0,
   "module": "VN Office AI",
   "subject": "[VN Office AI] Job {{ doc.name }} phân tích thất bại",
   "document_type": "AI Office Analysis Job",
@@ -74,7 +74,7 @@
  {
   "doctype": "Notification",
   "name": "AIO Document Failed",
-  "is_standard": 1,
+  "is_standard": 0,
   "module": "VN Office AI",
   "subject": "[VN Office AI] Soạn tài liệu {{ doc.name }} thất bại",
   "document_type": "AI Office Document Request",

@@ -31,6 +31,10 @@ fixtures = [
     {"dt": "AI Office Template", "filters": [["template_code", "like", "TPL-%"]]},
     {"dt": "AI Office Analysis Type", "filters": [["type_code", "like", "ANL-%"]]},
     {"dt": "Print Format", "filters": [["name", "like", "AIO %"]]},
+    # LƯU Ý: Notification phải để is_standard=0 trong fixtures. Notification.validate_standard()
+    # throw "Cannot edit Standard Notification" khi is_standard=1 + enabled=1 + developer_mode tắt,
+    # và KHÔNG có exemption in_install/in_migrate (khác Print Format) → vỡ install/migrate trên
+    # site production. Nếu re-export từ site dev, nhớ set is_standard=0 lại.
     {"dt": "Notification", "filters": [["name", "like", "AIO %"]]},
     {"dt": "Workspace", "filters": [["name", "=", "VN Office AI"]]},
 ]
